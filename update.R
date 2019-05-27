@@ -2,8 +2,8 @@
 # Download and save IMDB files 
 #  Data file info https://www.imdb.com/interfaces/
 #  Data files https://datasets.imdbws.com/  
-# This program combines the loadlad of IMDB data files
-# and the ripping of vote deails and metascores.
+# This program combines the loading of IMDB data files
+# and the ripping of vote details and metascores.
 # It is intended as the daily automatic data update
 # and replaces the programs download.R and metascore.R
 
