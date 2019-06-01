@@ -20,30 +20,33 @@ PROJECT_DIR <- "c:/R/IMDB"
 DATA_DIR    <- "c:/R/IMDB/data"
 FILE_DIR    <- "c:/R/IMDB_Archive/data"
 
-load(file=paste(DATA_DIR,"/votes.RData",sep=""))
-load(file=paste(DATA_DIR,"/metascores.RData",sep=""))
-load(file=paste(DATA_DIR,"/rating.history.RData",sep=""))
+load(file=paste0(DATA_DIR,"/votes.RData"))
+load(file=paste0(DATA_DIR,"/metascores.RData"))
+load(file=paste0(DATA_DIR,"/rating.history.RData"))
 
 votes <- votes %>% group_by(tconst,Date) %>% slice(1) %>% ungroup  # Filter for unique date within movie
 
-if (!file.exists(paste(FILE_DIR,"/basics-",Sys.Date(),".tsv.gz",sep=""))){
-  download.file("https://datasets.imdbws.com/title.basics.tsv.gz",
-                paste(FILE_DIR,"/basics-",Sys.Date(),".tsv.gz",sep=""))
-}
-
 if (!file.exists(paste(FILE_DIR,"/ratings-",Sys.Date(),".tsv.gz",sep=""))){
   download.file("https://datasets.imdbws.com/title.ratings.tsv.gz",
-                paste(FILE_DIR,"/ratings-",Sys.Date(),".tsv.gz",sep=""))
+                paste0(FILE_DIR,"/ratings-",Sys.Date(),".tsv.gz"))
 }
 
-if (!file.exists(paste(FILE_DIR,"/episode-",Sys.Date(),".tsv.gz",sep=""))){
-  download.file("https://datasets.imdbws.com/title.episode.tsv.gz",
-                paste(FILE_DIR,"/episode-",Sys.Date(),".tsv.gz",sep=""))
+if (!file.exists(paste0(FILE_DIR,"/title.basics.tsv.gz")) |
+    as.Date(file.info(paste0(FILE_DIR,"/title.basics.tsv.gz"))$mtime) != Sys.Date()){
+  download.file("https://datasets.imdbws.com/title.basics.tsv.gz",
+                paste0(FILE_DIR,"/title.basics.tsv.gz"))
 }
+
+if (!file.exists(paste0(FILE_DIR,"/title.episode.tsv.gz")) |
+    as.Date(file.info(paste0(FILE_DIR,"/title.episode.tsv.gz"))$mtime) != Sys.Date()){
+  download.file("https://datasets.imdbws.com/title.episode.tsv.gz",
+                paste0(FILE_DIR,"/title.episode.tsv.gz"))
+}
+
 
 # Function to read a ratings data file and add the date
 read_rat <- function(date){  
-  r <- read.delim(paste(FILE_DIR,"/ratings-",date,".tsv.gz",sep=""),stringsAsFactors = FALSE)
+  r <- read.delim(paste0(FILE_DIR,"/ratings-",date,".tsv.gz"),stringsAsFactors = FALSE)
   r$Date=as.Date(date)
   return(r)
 }
@@ -53,11 +56,11 @@ ratings <- read_rat(Sys.Date())
 # Add ratings to Ratings History
 rating.history <- rbind(rating.history,ratings) %>% 
   filter(numVotes >= 100) %>% 
-  filter(Date >= Sys.Date() - 7) %>% 
+  filter(Date >= Sys.Date() - 30) %>% 
   distinct()
 
 # Replace old Basics data frame with new data
-basics  <- read.delim(paste(FILE_DIR,"/basics-",Sys.Date(),".tsv.gz",sep="") ,stringsAsFactors = FALSE)
+basics  <- read.delim(paste0(FILE_DIR,"/title.basics.tsv.gz") ,stringsAsFactors = FALSE)
 # Clean Basics
 # basics <- basics[basics$titleType=="movie",]  # Only keep movies
 # basics <- basics[basics$titleType %in% c("movie","tvSeries","video","tvMovie"),]  # Only keep selected types
@@ -71,15 +74,15 @@ basics$isAdult   <- as.numeric(basics$isAdult)
 basics$startYear <- as.numeric(basics$startYear)
 basics$endYear   <- as.numeric(basics$endYear)
 basics$runtimeMinutes <- as.numeric(basics$runtimeMinutes)
-save(basics,file=paste(DATA_DIR,"/basics.RData",sep=""))
+save(basics,file=paste0(DATA_DIR,"/basics.RData"))
 
 # Replace old Episode data frame with new data
-episode  <- read.delim(paste(FILE_DIR,"/episode-",Sys.Date(),".tsv.gz",sep="") ,stringsAsFactors = FALSE)
-
+episode  <- read.delim(paste0(FILE_DIR,"/title.episode.tsv.gz") ,stringsAsFactors = FALSE)
+save(episode,file=paste0(DATA_DIR,"/episode.RData"))
 
 # Rip individual votes for a given movie
 vote_rip <- function(tconst){
-  url <- paste('https://www.imdb.com/title/',tconst,'/ratings?ref_=tt_ov_rt',sep='')
+  url <- paste0('https://www.imdb.com/title/',tconst,'/ratings?ref_=tt_ov_rt')
   #Reading the HTML code from the website
   webpage <- read_html(url)
   rank_html <- html_nodes(webpage,'.leftAligned')
@@ -104,7 +107,7 @@ vote_rip <- function(tconst){
 
 # Read Metacritic Score for a single movie
 meta_rip <- function(tconst){
-  url <- paste('https://www.imdb.com/title/',tconst,'/criticreviews?ref_=tt_ov_rt',sep='')
+  url <- paste0('https://www.imdb.com/title/',tconst,'/criticreviews?ref_=tt_ov_rt')
   #Reading the HTML code from the website
   webpage <- read_html(url)
   meta_html <- html_nodes(webpage,'.metascore_wrap')
@@ -219,8 +222,8 @@ for(id in update.ids){
   votes      <- rbind(votes,vote_rip(id))
   metascores <- rbind(metascores,meta_rip(id))
 }
-save(votes,file=paste(DATA_DIR,"/votes.RData",sep="")) # Save Votes data after each step
-save(metascores,file=paste(DATA_DIR,"/metascores.RData",sep=""))
+save(votes,file=paste0(DATA_DIR,"/votes.RData")) # Save Votes data after each step
+save(metascores,file=paste0(DATA_DIR,"/metascores.RData"))
 
 update.ids <- head(ids.novotes,1000)$tconst
 label <- "New Votes"
@@ -237,8 +240,8 @@ for(id in update.ids){
   votes      <- rbind(votes,vote_rip(id))
   metascores <- rbind(metascores,meta_rip(id))
 }
-save(votes,file=paste(DATA_DIR,"/votes.RData",sep="")) # Save Votes data after each step
-save(metascores,file=paste(DATA_DIR,"/metascores.RData",sep=""))
+save(votes,file=paste0(DATA_DIR,"/votes.RData")) # Save Votes data after each step
+save(metascores,file=paste0(DATA_DIR,"/metascores.RData"))
 
 ids.votes.minus <- ids.votes.minus[order(ids.votes.minus$Date),]
 print(paste("Updating 250 of the oldest voted movies. Oldest Date is",head(ids.votes.minus$Date,1)))
@@ -272,7 +275,7 @@ votes <- votes %>% filter(!is.na(Vote_sum))
 
 # Fit the model
 
-load(file=paste(DATA_DIR,"/vote.model.RData",sep=""))
+load(file=paste0(DATA_DIR,"/vote.model.RData"))
 vote.model <- vote.model %>% filter(!is.na(Vote_sum))
 vote.model <- vote.model %>% group_by(tconst,Date) %>% slice(1) %>% ungroup  # Filter for unique date within movie
 
@@ -371,15 +374,13 @@ vote.model$binary.mean <- 1+9*vote.model$binary.ppn
 
 votes <- votes %>% group_by(tconst,Date) %>% slice(1) %>% ungroup  # Filter for unique date within movie
 
-save(votes,file=paste(DATA_DIR,"/votes.RData",sep=""))
-save(metascores,file=paste(DATA_DIR,"/metascores.RData",sep=""))
-save(basics,file=paste(DATA_DIR,"/basics.RData",sep=""))
-save(episode,file=paste(DATA_DIR,"/episode.RData",sep=""))
-save(ratings,file=paste(DATA_DIR,"/ratings.RData",sep=""))
-save(vote.model,file=paste(DATA_DIR,"/vote.model.RData",sep=""))
-save(ratings,file=paste(DATA_DIR,"/ratings.RData",sep=""))
-save(rating.history,file=paste(DATA_DIR,"/rating.history.RData",sep=""))
-# save.image(file=paste(DATA_DIR,"/IMDB_Stats.RData",sep=""))  # Comment out - not needed.
+save(votes,file=paste0(DATA_DIR,"/votes.RData"))
+save(metascores,file=paste0(DATA_DIR,"/metascores.RData"))
+save(basics,file=paste0(DATA_DIR,"/basics.RData"))
+save(episode,file=paste0(DATA_DIR,"/episode.RData"))
+save(ratings,file=paste0(DATA_DIR,"/ratings.RData"))
+save(vote.model,file=paste0(DATA_DIR,"/vote.model.RData"))
+save(ratings,file=paste0(DATA_DIR,"/ratings.RData"))
+save(rating.history,file=paste0(DATA_DIR,"/rating.history.RData"))
 print("Program finished")
 timestamp()
-
