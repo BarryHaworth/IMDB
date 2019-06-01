@@ -20,9 +20,9 @@ PROJECT_DIR <- "c:/R/IMDB"
 DATA_DIR    <- "c:/R/IMDB/data"
 FILE_DIR    <- "c:/R/IMDB_Archive/data"
 
-load(file=paste(DATA_DIR,"/votes.RData",sep=""))
-load(file=paste(DATA_DIR,"/metascores.RData",sep=""))
-load(file=paste(DATA_DIR,"/rating.history.RData",sep=""))
+load(file=paste0(DATA_DIR,"/votes.RData"))
+load(file=paste0(DATA_DIR,"/metascores.RData"))
+load(file=paste0(DATA_DIR,"/rating.history.RData"))
 
 votes <- votes %>% group_by(tconst,Date) %>% slice(1) %>% ungroup  # Filter for unique date within movie
 
