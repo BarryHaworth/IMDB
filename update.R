@@ -26,23 +26,28 @@ load(file=paste0(DATA_DIR,"/rating.history.RData"))
 
 votes <- votes %>% group_by(tconst,Date) %>% slice(1) %>% ungroup  # Filter for unique date within movie
 
+# Get Ratings file and stamp each file with the date
 if (!file.exists(paste(FILE_DIR,"/ratings-",Sys.Date(),".tsv.gz",sep=""))){
   download.file("https://datasets.imdbws.com/title.ratings.tsv.gz",
                 paste0(FILE_DIR,"/ratings-",Sys.Date(),".tsv.gz"))
 }
 
-if (!file.exists(paste0(FILE_DIR,"/title.basics.tsv.gz")) |
-    as.Date(file.info(paste0(FILE_DIR,"/title.basics.tsv.gz"))$mtime) != Sys.Date()){
-  download.file("https://datasets.imdbws.com/title.basics.tsv.gz",
-                paste0(FILE_DIR,"/title.basics.tsv.gz"))
+# Get latest version of other files but only keep th elatest version
+get_title <- function(file){
+  local_file <- paste0(FILE_DIR,"/title.",file,".tsv.gz")
+  print(paste("Local file:",local_file))
+  remote_file <- paste0("https://datasets.imdbws.com/title.",file,".tsv.gz")
+  print(paste("Remote File:",remote_file))
+  if (!file.exists(local_file) |
+      as.Date(file.info(local_file)$mtime) != Sys.Date()){
+    download.file(remote_file,local_file)
+  }
 }
 
-if (!file.exists(paste0(FILE_DIR,"/title.episode.tsv.gz")) |
-    as.Date(file.info(paste0(FILE_DIR,"/title.episode.tsv.gz"))$mtime) != Sys.Date()){
-  download.file("https://datasets.imdbws.com/title.episode.tsv.gz",
-                paste0(FILE_DIR,"/title.episode.tsv.gz"))
-}
-
+get_title("basics")
+get_title("crew")
+get_title("episode")
+get_title("principals")
 
 # Function to read a ratings data file and add the date
 read_rat <- function(date){  
