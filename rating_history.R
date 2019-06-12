@@ -48,8 +48,6 @@ for(d in seq.Date(start.date+1,end.date,1)){
 
 rating.history.full <- rating.history.full  %>% distinct()
 
-rating.history.full$tconst <- as.factor(rating.history.full$tconst)
-
 save(rating.history.full,file=paste0(DATA_DIR,"/rating.history.full.RData"))
 
 # Create Subset - latest ratings
