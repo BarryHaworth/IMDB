@@ -1,6 +1,6 @@
 # Rating History
 # Read and merge all the Rating counts 
-# Individual tsv.gz files are read and saved as RData files.
+# Individual ratings-(date).tsv.gz files are read and saved as individual RData files.
 # Most recent 50 files are combined into rating.history.latest 
 
 library(dplyr)
@@ -11,7 +11,7 @@ timestamp()
 
 PROJECT_DIR <- "c:/R/IMDB"
 DATA_DIR    <- "c:/R/IMDB/data"
-FILE_DIR    <- "c:/R/IMDB_Archive/data"
+FILE_DIR    <- "c:/R/IMDB/data/tsv"
 
 # Initialise the Rating History file
 start.date <- as.Date("2018-05-14")  # The oldest history file I have
@@ -58,17 +58,17 @@ for(d in seq.Date(start.date+1,end.date,1)){
   }
 }
 
-# Save the latest history (50 days)
+# Save the latest history (30 days)
 
 load(paste0(DATA_DIR,"/ratings-",latest.date,".RData"))
 rating.history.latest <- r
 
-days <- 50
+days <- 30
 start.time <- Sys.time()
 
 for(d in seq.Date(latest.date-days,latest.date-1,1)){
   d.date <- as.Date(d,origin = "1970-01-01")
-  count <- as.numeric(d.date - start.date)
+  count <- as.numeric(d.date - latest.date+days+1)
   ETA <- Sys.time() + (days-count) * (Sys.time() - start.time)/count
   if (file.exists(paste0(DATA_DIR,"/ratings-",d.date,".RData"))){
     print(paste("History file: Adding date",d.date," Day",count,"of",days,"ETA:",ETA))
@@ -82,6 +82,6 @@ for(d in seq.Date(latest.date-days,latest.date-1,1)){
 
 save(rating.history.latest,file=paste0(DATA_DIR,"/rating.history.latest.RData"))
 
-head(rating.history.latest,20)
+head(rating.history.latest,50)
 summary(rating.history.latest)
 ggplot(rating.history.latest, aes(x=averageRating)) + geom_histogram() 

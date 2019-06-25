@@ -10,7 +10,7 @@ timestamp()
 
 PROJECT_DIR <- "c:/R/IMDB"
 DATA_DIR    <- "c:/R/IMDB/data"
-FILE_DIR    <- "c:/R/IMDB_Archive/data"
+FILE_DIR    <- "c:/R/IMDB/data/tsv"
 
 # Initialise the Rating History file
 start.date <- as.Date("2018-05-14")  # The oldest history file I have

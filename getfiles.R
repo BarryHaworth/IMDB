@@ -5,7 +5,7 @@ library(rmutil)
 
 PROJECT_DIR <- "c:/R/IMDB"
 DATA_DIR    <- "c:/R/IMDB/data"
-FILE_DIR    <- "c:/R/IMDB_Archive/data"
+FILE_DIR    <- "c:/R/IMDB/data/tsv"
 
 get_title <- function(file){
   local_file <- paste0(FILE_DIR,"/title.",file,".tsv.gz")
