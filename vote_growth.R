@@ -5,7 +5,7 @@ library(ggplot2)
 
 PROJECT_DIR <- "c:/R/IMDB"
 DATA_DIR    <- "c:/R/IMDB/data"
-FILE_DIR    <- "c:/R/IMDB_Archive/data"
+FILE_DIR    <- "c:/R/IMDB/data/tsv"
 
 load(file=paste(DATA_DIR,"/votes.RData",sep=""))
 #load(file=paste(DATA_DIR,"/ratings.RData",sep=""))
