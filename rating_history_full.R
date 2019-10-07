@@ -37,7 +37,7 @@ summary(latest.data)
 
 # Update the Rating History file
 
-# Function to read a ratings data file and add the date adn save to an RData file
+# Function to read a ratings data file and add the date and save to an RData file
 read_rat <- function(date){  
   r <- read.delim(paste(FILE_DIR,"/ratings-",date,".tsv.gz",sep=""),stringsAsFactors = FALSE)
   r$Date <- as.Date(date)
@@ -60,17 +60,26 @@ for(d in seq.Date(start.date+1,end.date,1)){
 
 # Save the latest history (30 days)
 
-load(paste0(DATA_DIR,"/ratings-",latest.date,".RData"))
-rating.history.latest <- r
-
 days <- 30
 start.time <- Sys.time()
 
-for(d in seq.Date(latest.date-days,latest.date-1,1)){
+# Read the file if it exists
+if (file.exists(paste0(DATA_DIR,"/rating.history.latest.RData"))){
+  load(paste0(DATA_DIR,"/rating.history.latest.RData"))
+  rating.history.latest <- rating.history.latest %>% filter(Date >= latest.date-days)
+} else {
+  load(paste0(DATA_DIR,"/ratings-",latest.date-days,".RData"))
+  rating.history.latest <- r
+}
+
+history.dates <- unique(rating.history.latest$Date)  # Dates which exist in the history file
+summary(history.dates)
+
+for(d in seq.Date(latest.date-days,latest.date,1)){
   d.date <- as.Date(d,origin = "1970-01-01")
   count <- as.numeric(d.date - latest.date+days+1)
   ETA <- Sys.time() + (days-count) * (Sys.time() - start.time)/count
-  if (file.exists(paste0(DATA_DIR,"/ratings-",d.date,".RData"))){
+  if ((file.exists(paste0(DATA_DIR,"/ratings-",d.date,".RData")))&(!d.date %in% history.dates) ){
     print(paste("History file: Adding date",d.date," Day",count,"of",days,"ETA:",ETA))
     load(paste0(DATA_DIR,"/ratings-",d.date,".RData"))
     rating.history.latest <- rating.history.latest %>% 
@@ -84,4 +93,3 @@ save(rating.history.latest,file=paste0(DATA_DIR,"/rating.history.latest.RData"))
 
 head(rating.history.latest,50)
 summary(rating.history.latest)
-ggplot(rating.history.latest, aes(x=averageRating)) + geom_histogram() 

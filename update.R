@@ -32,7 +32,7 @@ if (!file.exists(paste(FILE_DIR,"/ratings-",Sys.Date(),".tsv.gz",sep=""))){
                 paste0(FILE_DIR,"/ratings-",Sys.Date(),".tsv.gz"))
 }
 
-# Get latest version of other files but only keep th elatest version
+# Get latest version of other files but only keep the latest version
 get_title <- function(file){
   local_file <- paste0(FILE_DIR,"/title.",file,".tsv.gz")
   print(paste("Local file:",local_file))
@@ -44,10 +44,23 @@ get_title <- function(file){
   }
 }
 
+get_name <- function(file){
+  local_file <- paste0(FILE_DIR,"/name.",file,".tsv.gz")
+  print(paste("Local file:",local_file))
+  remote_file <- paste0("https://datasets.imdbws.com/name.",file,".tsv.gz")
+  print(paste("Remote File:",remote_file))
+  if (!file.exists(local_file) |
+      as.Date(file.info(local_file)$mtime) != Sys.Date()){
+    download.file(remote_file,local_file)
+  }
+}
+
 get_title("basics")
 get_title("crew")
 get_title("episode")
 get_title("principals")
+
+get_name("basics")
 
 # Function to read a ratings data file and add the date
 read_rat <- function(date){  
