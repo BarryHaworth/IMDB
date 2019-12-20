@@ -6,4 +6,5 @@
 *.csv
 *.xlsx
 *.gz
+*.tsv
 updater.log
