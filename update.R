@@ -158,8 +158,9 @@ votes.yesterday <- rating.history %>%
   select(c("tconst","numVotes")) %>%
   rename(yesterday.rat=numVotes)
 
-votes.growth <- merge(votes.today,votes.yesterday,by="tconst",all.x=T) 
+votes.growth <- merge(votes.today,votes.yesterday,by="tconst",all.x=T,all.y=T) 
 votes.growth$yesterday.rat[is.na(votes.growth$yesterday.rat)] <- 0
+votes.growth$today.rat[is.na(votes.growth$today.rat)] <- 2*votes.growth$yesterday.rat[is.na(votes.growth$today.rat)]
 
 votes.growth <- votes.growth %>%
   mutate(delta = today.rat - yesterday.rat,
