@@ -77,7 +77,12 @@ rating.history <- rbind(rating.history,ratings) %>%
   filter(Date >= Sys.Date() - 30) %>% 
   distinct()
 
-# Replace old Basics data frame with new data
+# Replace old Principals data frame with new data
+principals  <- read.delim(paste0(FILE_DIR,"/title.principals.tsv.gz") ,stringsAsFactors = FALSE)
+# Clean principals
+# Set types for columns
+save(principals,file=paste0(DATA_DIR,"/principals.RData"))# Replace old Basics data frame with new data
+
 basics  <- read.delim(paste0(FILE_DIR,"/title.basics.tsv.gz") ,stringsAsFactors = FALSE)
 # Clean Basics
 # basics <- basics[basics$titleType=="movie",]  # Only keep movies
