@@ -28,7 +28,7 @@ for(d in seq.Date(start.date+1,end.date,1)){
 }
 
 end.date    <- latest.date
-latest.data <- read.delim(paste(FILE_DIR,"/ratings-",latest.date,".tsv.gz",sep=""),stringsAsFactors = FALSE)
+latest.data <- read.delim(paste(FILE_DIR,"/ratings-",latest.date,".tsv.gz",sep=""),stringsAsFactors = FALSE, quote="")
 ggplot(latest.data, aes(x=numVotes)) + geom_histogram() + scale_x_log10()
 
 summary(latest.data)
@@ -41,7 +41,7 @@ filter.10K <- latest.data %>% filter(numVotes >= 10000) %>% select(tconst)
 
 # Function to read a ratings data file and add the date
 read_rat <- function(date){  
-  r <- read.delim(paste(FILE_DIR,"/ratings-",date,".tsv.gz",sep=""),stringsAsFactors = FALSE)
+  r <- read.delim(paste(FILE_DIR,"/ratings-",date,".tsv.gz",sep=""),stringsAsFactors = FALSE, quote="")
   r <- r %>% inner_join(filter.10K,by="tconst")  # Filter out movies with < 10K votes in latest data
   r$Date <- as.Date(date)
   return(r)

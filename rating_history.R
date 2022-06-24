@@ -12,7 +12,7 @@ FILE_DIR    <- "c:/R/IMDB/data/tsv"
 
 # Function to read a ratings data file and add the date
 read_rat <- function(date){  
-  r <- read.delim(paste(FILE_DIR,"/ratings-",date,".tsv.gz",sep=""),stringsAsFactors = FALSE)
+  r <- read.delim(paste(FILE_DIR,"/ratings-",date,".tsv.gz",sep=""),stringsAsFactors = FALSE, quote="")
   r$Date <- as.Date(date)
   r <- r %>% filter(numVotes >= 100)  # Filter out movies with fewer than 100 votes
   return(r)

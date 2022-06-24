@@ -30,7 +30,7 @@ for(d in seq.Date(start.date+1,end.date,1)){
 }
 
 end.date    <- latest.date
-latest.data <- read.delim(paste(FILE_DIR,"/ratings-",latest.date,".tsv.gz",sep=""),stringsAsFactors = FALSE)
+latest.data <- read.delim(paste(FILE_DIR,"/ratings-",latest.date,".tsv.gz",sep=""),stringsAsFactors = FALSE, quote="")
 ggplot(latest.data, aes(x=numVotes)) + geom_histogram() + scale_x_log10()
 
 summary(latest.data)
@@ -39,7 +39,7 @@ summary(latest.data)
 
 # Function to read a ratings data file and add the date and save to an RData file
 read_rat <- function(date){  
-  r <- read.delim(paste(FILE_DIR,"/ratings-",date,".tsv.gz",sep=""),stringsAsFactors = FALSE)
+  r <- read.delim(paste(FILE_DIR,"/ratings-",date,".tsv.gz",sep=""),stringsAsFactors = FALSE, quote="")
   r$Date <- as.Date(date)
   save(r,file=paste0(DATA_DIR,"/ratings-",date,".RData"))
 }

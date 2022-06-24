@@ -18,7 +18,7 @@ get_title <- function(file){
 get_title("principals")
 
 # Replace old Principals data frame with new data
-principals  <- read.delim(paste0(FILE_DIR,"/title.principals.tsv.gz") ,stringsAsFactors = FALSE)
+principals  <- read.delim(paste0(FILE_DIR,"/title.principals.tsv.gz") ,stringsAsFactors = FALSE, quote="")
 # Clean principals
 # Set types for columns
 

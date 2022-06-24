@@ -18,7 +18,7 @@ if (!file.exists(paste(FILE_DIR,"/basics-",Sys.Date(),".tsv.gz",sep=""))){
 }
 
 # Replace old Basics data frame with new data
-basics  <- read.delim(paste(FILE_DIR,"/basics-",Sys.Date(),".tsv.gz",sep="") ,stringsAsFactors = FALSE)
+basics  <- read.delim(paste(FILE_DIR,"/basics-",Sys.Date(),".tsv.gz",sep="") ,stringsAsFactors = FALSE, quote="")
 # Clean Basics
 # basics <- basics[basics$titleType=="movie",]  # Only keep movies
 basics <- basics[basics$titleType %in% c("movie","tvSeries","video","tvMovie"),]  # Only keep selected types

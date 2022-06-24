@@ -64,7 +64,7 @@ get_name("basics")
 
 # Function to read a ratings data file and add the date
 read_rat <- function(date){  
-  r <- read.delim(paste0(FILE_DIR,"/ratings-",date,".tsv.gz"),stringsAsFactors = FALSE)
+  r <- read.delim(paste0(FILE_DIR,"/ratings-",date,".tsv.gz"),stringsAsFactors = FALSE, quote="")
   r$Date=as.Date(date)
   return(r)
 }
@@ -74,16 +74,11 @@ ratings <- read_rat(Sys.Date())
 # Add ratings to Ratings History
 rating.history <- rbind(rating.history,ratings) %>% 
   filter(numVotes >= 100) %>% 
-  filter(Date >= Sys.Date() - 30) %>% 
+#  filter(Date >= Sys.Date() - 30) %>% 
   distinct()
 
-# Replace old Principals data frame with new data
-principals  <- read.delim(paste0(FILE_DIR,"/title.principals.tsv.gz") ,stringsAsFactors = FALSE)
-# Clean principals
-# Set types for columns
-save(principals,file=paste0(DATA_DIR,"/principals.RData"))# Replace old Basics data frame with new data
-
-basics  <- read.delim(paste0(FILE_DIR,"/title.basics.tsv.gz") ,stringsAsFactors = FALSE)
+# Replace old Basics data frame with new data
+basics  <- read.delim(paste0(FILE_DIR,"/title.basics.tsv.gz") ,stringsAsFactors = FALSE, quote="")
 # Clean Basics
 # basics <- basics[basics$titleType=="movie",]  # Only keep movies
 # basics <- basics[basics$titleType %in% c("movie","tvSeries","video","tvMovie"),]  # Only keep selected types
@@ -100,7 +95,7 @@ basics$runtimeMinutes <- as.numeric(basics$runtimeMinutes)
 save(basics,file=paste0(DATA_DIR,"/basics.RData"))
 
 # Replace old Episode data frame with new data
-episode  <- read.delim(paste0(FILE_DIR,"/title.episode.tsv.gz") ,stringsAsFactors = FALSE)
+episode  <- read.delim(paste0(FILE_DIR,"/title.episode.tsv.gz") ,stringsAsFactors = FALSE, quote="")
 save(episode,file=paste0(DATA_DIR,"/episode.RData"))
 
 # Rip individual votes for a given movie
@@ -215,8 +210,8 @@ votes.growth <- votes.growth[order(-votes.growth$votes),]          # Order by de
 # ids         <- ids[order(-ids$numVotes),]          # Order by descending number of votes
 # ids.novotes <- ids[(is.na(ids$Vote_sum)==TRUE),]   # No Previous Vote Count
 # ids.votes   <- ids[(is.na(ids$Vote_sum)==FALSE),]  # With previous Vote count
-ids.novotes <- votes.growth[(is.na(votes.growth$Date)==TRUE),]  %>% filter(votes>1000)  # No Previous Vote Count
-ids.votes   <- votes.growth[(is.na(votes.growth$Date)==FALSE),] %>% filter(votes>1000) # With previous Vote count
+ids.novotes <- votes.growth[(is.na(votes.growth$Date)&(votes.growth$votes>1000)),]  
+ids.votes   <- votes.growth[(!is.na(votes.growth$Date)&(votes.growth$votes>1000)),]  
 
 # Votes have increased by > 500 or by 10% or more
 #ids.votes.plus <- ids.votes[((ids.votes$numVotes >= ids.votes$Vote_sum+500)|(ids.votes$numVotes/ids.votes$Vote_sum>1.1)),]

@@ -32,7 +32,7 @@ for(d in seq.Date(start.date+1,end.date,1)){
 }
 
 end.date    <- latest.date
-latest.data <- read.delim(paste(FILE_DIR,"/ratings-",latest.date,".tsv.gz",sep=""),stringsAsFactors = FALSE)
+latest.data <- read.delim(paste(FILE_DIR,"/ratings-",latest.date,".tsv.gz",sep=""),stringsAsFactors = FALSE, quote="")
 ggplot(latest.data, aes(x=numVotes)) + geom_histogram() + scale_x_log10()
 
 summary(latest.data)
@@ -45,7 +45,7 @@ filter.movie <- basics %>% filter(titleType %in% c("movie","tvSeries","tvMovie")
 
 # Function to read a ratings data file and add the date
 read_rat <- function(date){  
-  r <- read.delim(paste(FILE_DIR,"/ratings-",date,".tsv.gz",sep=""),stringsAsFactors = FALSE)
+  r <- read.delim(paste(FILE_DIR,"/ratings-",date,".tsv.gz",sep=""),stringsAsFactors = FALSE, quote="")
   r <- r %>% filter(numVotes >= 50) %>% 
     inner_join(filter.movie,by="tconst")  # Filter out TV Episodes
   r$Date <- as.Date(date)
