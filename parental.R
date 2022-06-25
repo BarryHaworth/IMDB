@@ -5,6 +5,7 @@
 library(rvest)
 library(dplyr)
 library(rmutil)
+library(stringr)
 
 options(timeout= 4000000)
 
@@ -24,8 +25,14 @@ guide_rip <- function(tconst){
   #Reading the HTML code from the website
   webpage <- read_html(url)
   mpaa_html  <- html_nodes(webpage,'td')
-  if (length(mpaa_html)==4){mpaa <- html_text(mpaa_html[2])  
-     } else {mpaa <- ""}
+  if (length(mpaa_html)==4){
+    mpaa <- html_text(mpaa_html[2])  
+    mpaa_words <-unlist(str_split(gsub("[()]","",mpaa), " ")) 
+    mpaa_pos <- max(which(mpaa_words=="Rated"),0)
+    mpaa_rating <- mpaa_words[mpaa_pos+1]
+  } else {
+       mpaa <- ""
+       mpaa_rating <- ""}
   cert_html   <- html_nodes(webpage,'.ipl-inline-list')
   if (length(cert_html)==2){  certificate <- gsub("\n",",",html_text2(cert_html[2]))
      } else {certificate <- ""}
@@ -48,7 +55,8 @@ guide_rip <- function(tconst){
     if (drugs==""){i=i+1}  else {i=i+2}
     intense <- html_text(guide_html[i])
   }
-  guide     <- data.frame(tconst,sex,violence,profanity,drugs,intense,mpaa,certificate)
+  guide     <- data.frame(tconst,sex,violence,profanity,drugs,intense,
+                          mpaa_rating,mpaa,certificate,stringsAsFactors=FALSE)
   return(guide)
 }
 
@@ -65,6 +73,8 @@ guide_rip <- function(tconst){
 #guide_rip("tt2574698") # some, not all ratings
 #guide_rip("tt1179782") # table is empty
 #guide_rip("tt0216707")
+#guide_rip("tt2404435")
+#guide_rip("tt5742374")
 
 # Movies to get parental guides
 keeptypes <- c("movie","tvMovie","tvMiniSeries","tvSeries","videoGame")  # List of types to keep
@@ -72,7 +82,7 @@ keeptypes <- c("movie","tvMovie","tvMiniSeries","tvSeries","videoGame")  # List 
 movies <- basics %>%  filter(titleType %in% keeptypes) %>%
   left_join(ratings %>% select(tconst,averageRating,numVotes),by="tconst") %>%
   select(-endYear) %>%
-  filter(numVotes>1000) %>% arrange(-numVotes)
+  filter(numVotes>200000) %>% arrange(-numVotes)
 
 movie_ids <- movies %>% select(tconst)
 
@@ -127,6 +137,7 @@ parental_guide <- movies %>% inner_join(parental,by="tconst") %>%
                                   intense=="Severe"~4)
   )
 
+table(parental_guide$mpaa_rating)
 
 save(parental_guide,file=paste0(DATA_DIR,"/parental_guide.Rdata"))
 write.csv(parental_guide,paste0(DATA_DIR,"/IMDB_parental_guide.csv"),row.names = FALSE)
