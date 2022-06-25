@@ -2,13 +2,6 @@
 #  23/06/2022 - first version.  Some problems where a movie did not have all five guides.
 #  24/06/2022.  Updated to return blank values if not included.
 
-# Some problem movies:
-# guide_rip("tt7668842") 
-# guide_rip("tt0385267") 
-# guide_rip("tt0183869")
-# guide_rip("tt0245803")
-# guide_rip("tt0417217")
-
 library(rvest)
 library(dplyr)
 library(rmutil)
@@ -30,41 +23,50 @@ guide_rip <- function(tconst){
   url <- paste0('https://www.imdb.com/title/',tconst,'/parentalguide')
   #Reading the HTML code from the website
   webpage <- read_html(url)
+  mpaa_html  <- html_nodes(webpage,'td')
+  if (length(mpaa_html)==4){mpaa <- html_text(mpaa_html[2])  
+     } else {mpaa <- ""}
+  cert_html   <- html_nodes(webpage,'.ipl-inline-list')
+  if (length(cert_html)==2){  certificate <- gsub("\n",",",html_text2(cert_html[2]))
+     } else {certificate <- ""}
   guide_html <- html_nodes(webpage,'.ipl-status-pill')
   if (length(guide_html)==0){
-    sex       <-""
+    sex       <- ""
     violence  <- ""
     profanity <- ""
     drugs     <- ""
     intense   <- ""
   } else {
     i=1
-    if (html_text(guide_html[i])=="") {sex <- ""                            ; i <- i+1
-    } else {sex <- html_text(guide_html[i])      ; i <- i+2 }
-    if (html_text(guide_html[i])=="") {violence <- ""                       ; i <- i+1
-    } else {violence <- html_text(guide_html[i]) ; i <- i+2 }
-    if (html_text(guide_html[i])=="") {profanity <- ""                      ; i <- i+1
-    } else {profanity <- html_text(guide_html[i]); i <- i+2 }
-    if (html_text(guide_html[i])=="") {drugs <- ""                          ; i <- i+1
-    } else {drugs <- html_text(guide_html[i])    ; i <- i+2 }
-    if (html_text(guide_html[i])=="") {intense <- ""                        ; i <- i+1
-    } else {intense <- html_text(guide_html[i])  ; i <- i+2 }
+    sex <- html_text(guide_html[i])
+    if (sex==""){i=i+1}  else {i=i+2}
+    violence <- html_text(guide_html[i])
+    if (violence==""){i=i+1}  else {i=i+2}
+    profanity <- html_text(guide_html[i])
+    if (profanity==""){i=i+1}  else {i=i+2}
+    drugs <- html_text(guide_html[i])
+    if (drugs==""){i=i+1}  else {i=i+2}
+    intense <- html_text(guide_html[i])
   }
-  guide     <- data.frame(tconst,sex,violence,profanity,drugs,intense)
+  guide     <- data.frame(tconst,sex,violence,profanity,drugs,intense,mpaa,certificate)
   return(guide)
 }
 
 # Test movies
 #guide_rip("tt0452694")
 #guide_rip("tt8783930")
+# Some problem movies:
+# guide_rip("tt7668842") 
+# guide_rip("tt0385267") 
+# guide_rip("tt0183869")
+# guide_rip("tt0245803")
+# guide_rip("tt0417217")
 #guide_rip("tt1772925") # no ratings
 #guide_rip("tt2574698") # some, not all ratings
-guide_rip("tt1179782")
-guide_rip("tt0216707")
- 
+#guide_rip("tt1179782") # table is empty
+#guide_rip("tt0216707")
 
 # Movies to get parental guides
-
 keeptypes <- c("movie","tvMovie","tvMiniSeries","tvSeries","videoGame")  # List of types to keep
 
 movies <- basics %>%  filter(titleType %in% keeptypes) %>%
@@ -102,9 +104,32 @@ while(nrow(movie_ids)>0){
   movie_ids <- movie_ids %>% anti_join(parent_ids)
 }
 
-rated <- movies %>% inner_join(parental,by="tconst") 
-save(rated,file=paste0(DATA_DIR,"/rated.RData"))
-write.csv(rated,paste0(DATA_DIR,"/rated.csv"),row.names = FALSE)
+parental_guide <- movies %>% inner_join(parental,by="tconst") %>%
+  mutate(sex_code = case_when(sex=="None"~1,
+                              sex=="Mild"~2,
+                              sex=="Moderate"~3,
+                              sex=="Severe"~4),
+         violence_code = case_when(violence =="None"~1,
+                                   violence =="Mild"~2,
+                                   violence =="Moderate"~3,
+                                   violence =="Severe"~4),
+         profanity_code = case_when(profanity=="None"~1,
+                                    profanity=="Mild"~2,
+                                    profanity=="Moderate"~3,
+                                    profanity=="Severe"~4),
+         drug_code = case_when(drugs=="None"~1,
+                               drugs=="Mild"~2,
+                               drugs=="Moderate"~3,
+                               drugs=="Severe"~4),
+         intense_code = case_when(intense=="None"~1,
+                                  intense=="Mild"~2,
+                                  intense=="Moderate"~3,
+                                  intense=="Severe"~4)
+  )
+
+
+save(parental_guide,file=paste0(DATA_DIR,"/parental_guide.Rdata"))
+write.csv(parental_guide,paste0(DATA_DIR,"/IMDB_parental_guide.csv"),row.names = FALSE)
 
 table(parental$sex)
 table(parental$violence)
