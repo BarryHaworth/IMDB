@@ -82,7 +82,7 @@ keeptypes <- c("movie","tvMovie","tvMiniSeries","tvSeries","videoGame")  # List 
 movies <- basics %>%  filter(titleType %in% keeptypes) %>%
   left_join(ratings %>% select(tconst,averageRating,numVotes),by="tconst") %>%
   select(-endYear) %>%
-  filter(numVotes>200000) %>% arrange(-numVotes)
+  filter(numVotes>1000) %>% arrange(-numVotes)
 
 movie_ids <- movies %>% select(tconst)
 
