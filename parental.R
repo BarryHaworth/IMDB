@@ -1,19 +1,13 @@
 #  Rip Parental Guidance details
-# 23/06/2022 - first version.  Some problems where a movie did not have all five guides.
+#  23/06/2022 - first version.  Some problems where a movie did not have all five guides.
+#  24/06/2022.  Updated to return blank values if not included.
 
 # Some problem movies:
-# tt1772925 - no ratings
-# tt5988370 
-# tt2574698 - some, not all
-# tt7668842 
-# tt0385267 
-# tt0183869 
-# tt0245803
-# tt0417217
-# tt0240462 
-# tt0857191 
-# tt0295721 
-# tt2610768 
+# guide_rip("tt7668842") 
+# guide_rip("tt0385267") 
+# guide_rip("tt0183869")
+# guide_rip("tt0245803")
+# guide_rip("tt0417217")
 
 library(rvest)
 library(dplyr)
@@ -37,11 +31,25 @@ guide_rip <- function(tconst){
   #Reading the HTML code from the website
   webpage <- read_html(url)
   guide_html <- html_nodes(webpage,'.ipl-status-pill')
-  sex       <- html_text(guide_html[1])
-  violence  <- html_text(guide_html[3])
-  profanity <- html_text(guide_html[5])
-  drugs     <- html_text(guide_html[7])
-  intense   <- html_text(guide_html[9])
+  if (length(guide_html)==0){
+    sex       <-""
+    violence  <- ""
+    profanity <- ""
+    drugs     <- ""
+    intense   <- ""
+  } else {
+    i=1
+    if (html_text(guide_html[i])=="") {sex <- ""                            ; i <- i+1
+    } else {sex <- html_text(guide_html[i])      ; i <- i+2 }
+    if (html_text(guide_html[i])=="") {violence <- ""                       ; i <- i+1
+    } else {violence <- html_text(guide_html[i]) ; i <- i+2 }
+    if (html_text(guide_html[i])=="") {profanity <- ""                      ; i <- i+1
+    } else {profanity <- html_text(guide_html[i]); i <- i+2 }
+    if (html_text(guide_html[i])=="") {drugs <- ""                          ; i <- i+1
+    } else {drugs <- html_text(guide_html[i])    ; i <- i+2 }
+    if (html_text(guide_html[i])=="") {intense <- ""                        ; i <- i+1
+    } else {intense <- html_text(guide_html[i])  ; i <- i+2 }
+  }
   guide     <- data.frame(tconst,sex,violence,profanity,drugs,intense)
   return(guide)
 }
@@ -49,12 +57,17 @@ guide_rip <- function(tconst){
 # Test movies
 #guide_rip("tt0452694")
 #guide_rip("tt8783930")
-#guide_rip("tt0338337")
-#guide_rip("tt1092026")
+#guide_rip("tt1772925") # no ratings
+#guide_rip("tt2574698") # some, not all ratings
+guide_rip("tt1179782")
+guide_rip("tt0216707")
+ 
 
-# Movies to get guides
+# Movies to get parental guides
 
-movies <- basics %>% filter(titleType=="movie") %>%
+keeptypes <- c("movie","tvMovie","tvMiniSeries","tvSeries","videoGame")  # List of types to keep
+
+movies <- basics %>%  filter(titleType %in% keeptypes) %>%
   left_join(ratings %>% select(tconst,averageRating,numVotes),by="tconst") %>%
   select(-endYear) %>%
   filter(numVotes>1000) %>% arrange(-numVotes)
@@ -89,7 +102,7 @@ while(nrow(movie_ids)>0){
   movie_ids <- movie_ids %>% anti_join(parent_ids)
 }
 
-rated <- movies %>% inner_join(parental,by="tconst") %>% filter(intense!="")
+rated <- movies %>% inner_join(parental,by="tconst") 
 save(rated,file=paste0(DATA_DIR,"/rated.RData"))
 write.csv(rated,paste0(DATA_DIR,"/rated.csv"),row.names = FALSE)
 
@@ -99,4 +112,3 @@ table(parental$profanity)
 table(parental$drugs)
 table(parental$intense)
 
-parental %>% filter(intense=="")
